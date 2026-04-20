@@ -1,0 +1,85 @@
+{% extends "core/base.html" %}
+{% block title %}Profile — PaisaCoach{% endblock %}
+{% block page_title %}My Profile{% endblock %}
+{% block content %}
+<div class="grid grid-2">
+  <div class="card">
+    <div class="card-title">Financial Profile</div>
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:28px;padding:20px;background:var(--surface2);border-radius:12px;border:1px solid var(--border);">
+      <div style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:#000;font-family:var(--font-display);">
+        {{ user.username|first|upper }}
+      </div>
+      <div>
+        <div style="font-family:var(--font-display);font-size:20px;font-weight:700;">{{ user.username }}</div>
+        <div style="color:var(--text-muted);font-size:13px;">{{ user.email }}</div>
+        <div style="font-size:12px;color:var(--accent);margin-top:2px;">Member since {{ user.date_joined|date:"M Y" }}</div>
+      </div>
+    </div>
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">Age</label>
+        <input name="age" type="number" min="1" max="120" class="form-control" value="{{ profile.age|default_if_none:'' }}" placeholder="20">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Monthly Income (₹)</label>
+        <input name="monthly_income" type="number" class="form-control" value="{{ profile.monthly_income }}" placeholder="65000">
+        <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">Used for EMI burden calculation and salary autopilot</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Annual Savings Goal (₹)</label>
+        <input name="savings_goal" type="number" class="form-control" value="{{ profile.savings_goal }}" placeholder="200000">
+      </div>
+      <div class="form-group">
+        <label class="form-label">AI Insight Language</label>
+        <select name="language_preference" class="form-control">
+          <option value="en" {% if profile.language_preference == 'en' %}selected{% endif %}>English</option>
+          <option value="hi" {% if profile.language_preference == 'hi' %}selected{% endif %}>Hindi</option>
+          <option value="hinglish" {% if profile.language_preference == 'hinglish' %}selected{% endif %}>Hinglish (Hindi + English)</option>
+        </select>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">AI insights will be delivered in your preferred language</div>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;">Save Profile</button>
+    </form>
+  </div>
+  <div>
+    <div class="card mb-20">
+      <div class="card-title">Quick Stats</div>
+      <div class="grid grid-2" style="gap:12px;">
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;">
+          <div style="font-family:var(--font-display);font-size:24px;font-weight:800;color:var(--accent);">{{ user.transactions.count }}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">Transactions</div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;">
+          <div style="font-family:var(--font-display);font-size:24px;font-weight:800;color:var(--accent2);">{{ user.emis.count }}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">Active EMIs</div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;">
+          <div style="font-family:var(--font-display);font-size:24px;font-weight:800;color:var(--accent3);">{{ user.savings_goals.count }}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">Savings Goals</div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;">
+          <div style="font-family:var(--font-display);font-size:24px;font-weight:800;color:var(--warn);">{{ profile.language_preference|upper }}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">Language</div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;">
+          <div style="font-family:var(--font-display);font-size:24px;font-weight:800;color:var(--accent);">{{ profile.age|default:'--' }}</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">Age</div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="border-color:rgba(255,59,85,0.2);">
+      <div class="card-title" style="color:var(--danger);">Danger Zone</div>
+      <div style="font-size:14px;color:var(--text-muted);margin-bottom:16px;">Reset all your demo data and start fresh.</div>
+      <form method="post" action="{% url 'load_demo' %}" style="margin-bottom:10px;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-secondary btn-sm">Reload Demo Data</button>
+      </form>
+      <form method="post" action="{% url 'clear_demo' %}" onsubmit="return confirm('This will delete all transactions, EMIs, goals and AI insights. Continue?');">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger btn-sm">Clear Demo Data</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

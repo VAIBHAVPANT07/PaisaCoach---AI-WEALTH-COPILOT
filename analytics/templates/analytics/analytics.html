@@ -1,0 +1,235 @@
+{% extends "core/base.html" %}
+{% block title %}Analytics — PaisaCoach{% endblock %}
+{% block page_title %}Analytics & Insights{% endblock %}
+
+{% block content %}
+<style>
+  .analytics-hero {
+    background: linear-gradient(135deg, rgba(18,196,139,0.10) 0%, rgba(47,111,237,0.08) 100%);
+    border: 1px solid rgba(18,196,139,0.12);
+    border-radius: 28px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+
+  .analytics-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 18px;
+  }
+
+  .analytics-kpi {
+    background: rgba(255,255,255,0.72);
+    border: 1px solid rgba(227,233,243,0.95);
+    border-radius: 18px;
+    padding: 16px;
+  }
+
+  .analytics-kpi-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 6px;
+  }
+
+  .analytics-kpi-value {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.4px;
+  }
+
+  .analytics-note {
+    color: var(--text-muted);
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .analytics-card-soft {
+    background: rgba(255,255,255,0.92);
+    border: 1px solid rgba(227,233,243,0.95);
+    border-radius: 24px;
+    box-shadow: 0 18px 40px rgba(33,48,77,0.05);
+  }
+
+  @media (max-width: 900px) {
+    .analytics-kpi-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<div class="analytics-hero">
+  <div class="card-title" style="margin-bottom:10px;">Live Financial Overview</div>
+  <div style="font-size:34px;font-weight:800;font-family:var(--font-display);letter-spacing:-0.8px;line-height:1.1;max-width:12ch;">
+    See where your money moves.
+  </div>
+  <div class="analytics-note" style="max-width:62ch;margin-top:12px;">
+    A cleaner, faster breakdown of your trends, financial health, and idle money opportunities.
+  </div>
+  <div class="analytics-kpi-grid">
+    <div class="analytics-kpi">
+      <div class="analytics-kpi-label">Health Score</div>
+      <div class="analytics-kpi-value">{{ score_data.score }}</div>
+    </div>
+    <div class="analytics-kpi">
+      <div class="analytics-kpi-label">Idle Money</div>
+      <div class="analytics-kpi-value">₹{{ idle_data.idle_amount|floatformat:0|default_if_none:0 }}</div>
+    </div>
+    <div class="analytics-kpi">
+      <div class="analytics-kpi-label">Trend Window</div>
+      <div class="analytics-kpi-value">6 mo</div>
+    </div>
+  </div>
+</div>
+
+<!-- 6-Month Trend -->
+<div class="card analytics-card-soft mb-24">
+  <div class="card-title">6-Month Income vs Expense Trend</div>
+  <canvas id="trendChart" height="100"></canvas>
+</div>
+
+<div class="grid grid-3 mb-24">
+  <!-- Financial Age Breakdown -->
+  <div class="card analytics-card-soft col-span-2">
+    <div class="card-title">Financial Health Breakdown</div>
+    {% if score_data.breakdown %}
+    {% for label, data in score_data.breakdown.items %}
+    <div style="margin-bottom:16px;">
+      <div class="flex-between mb-6">
+        <span style="font-size:14px;font-weight:500;">{{ label }}</span>
+        <span style="font-family:var(--font-display);font-size:16px;font-weight:700;
+          color:{% if data.points > 0 %}var(--accent){% elif data.points < 0 %}var(--danger){% else %}var(--text-muted){% endif %}">
+          {% if data.points > 0 %}+{% endif %}{{ data.points }} pts
+        </span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="
+          width:{% if data.max > 0 %}{% widthratio data.points data.max 100 %}%{% else %}0%{% endif %};
+          background:{% if data.points > 0 %}var(--accent){% elif data.points < 0 %}var(--danger){% else %}var(--border){% endif %};">
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">{{ data.value }}</div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div style="text-align:center;padding:32px;color:var(--text-muted);">Add transactions to see your breakdown</div>
+    {% endif %}
+  </div>
+
+  <!-- Idle Money Card -->
+  <div class="flex-col gap-16">
+    {% if idle_data %}
+    <div class="card analytics-card-soft" style="border-color:rgba(243,178,35,0.2);background:linear-gradient(135deg,rgba(243,178,35,0.08) 0%,rgba(255,255,255,0.9) 100%);">
+      <div class="card-title">Idle Money</div>
+      <div style="font-family:var(--font-display);font-size:30px;font-weight:800;color:var(--warn);margin-bottom:8px;">
+        ₹{{ idle_data.idle_amount|floatformat:0 }}
+      </div>
+      <div style="font-size:13px;color:var(--text-muted);line-height:1.7;">
+        At savings rate (3.5%) you'd earn <strong style="color:var(--text)">₹{{ idle_data.current_earnings|floatformat:0 }}</strong> in 6 months.<br>
+        At FD rate ({{ idle_data.fd_rate }}%) you'd earn <strong style="color:var(--accent)">₹{{ idle_data.fd_earnings|floatformat:0 }}</strong>.
+      </div>
+      <div class="mt-16" style="background:var(--surface2);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:12px;color:var(--text-muted);">You're missing out on</div>
+        <div style="font-family:var(--font-display);font-size:22px;font-weight:800;color:var(--accent);">₹{{ idle_data.opportunity_cost|floatformat:0 }}</div>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="card">
+      <div class="card-title">Score Summary</div>
+      <div style="text-align:center;">
+        <div style="font-family:var(--font-display);font-size:52px;font-weight:800;color:{{ score_data.color }};line-height:1;">
+          {{ score_data.score }}
+        </div>
+        <div style="font-size:14px;color:{{ score_data.color }};margin-top:4px;font-weight:600;">{{ score_data.label }}</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:8px;">out of 70 possible points</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Action Items -->
+{% if score_data.actions %}
+<div class="card analytics-card-soft">
+  <div class="card-title">Action Items</div>
+  <div class="grid grid-2" style="gap:12px;">
+    {% for action in score_data.actions %}
+    <div style="background:rgba(0,229,160,0.05);border:1px solid rgba(0,229,160,0.15);border-radius:12px;padding:16px;display:flex;gap:12px;align-items:flex-start;">
+      <div style="width:24px;height:24px;border-radius:50%;background:rgba(0,229,160,0.15);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:1px;">{{ forloop.counter }}</div>
+      <div style="font-size:14px;line-height:1.6;">{{ action }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const months = {{ months_data|safe }};
+  const labels = months.map(m => m.month);
+  const incomes = months.map(m => m.income);
+  const expenses = months.map(m => m.expense);
+  const savings = months.map(m => m.savings);
+
+  const canvas = document.getElementById('trendChart');
+  if (!canvas || typeof Chart === 'undefined') {
+    return;
+  }
+
+  new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Income',
+          data: incomes,
+          backgroundColor: 'rgba(0,229,160,0.7)',
+          borderRadius: 6,
+          borderSkipped: false,
+        },
+        {
+          label: 'Expenses',
+          data: expenses,
+          backgroundColor: 'rgba(255,107,53,0.7)',
+          borderRadius: 6,
+          borderSkipped: false,
+        },
+        {
+          label: 'Savings',
+          data: savings,
+          type: 'line',
+          borderColor: '#3b7bff',
+          backgroundColor: 'rgba(59,123,255,0.1)',
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: '#3b7bff',
+          pointRadius: 4,
+          yAxisID: 'y',
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: { labels: { color: '#6b7fa3', font: { size: 12 } } },
+        tooltip: {
+          callbacks: { label: c => ` ₹${c.parsed.y.toLocaleString('en-IN')}` }
+        }
+      },
+      scales: {
+        x: { ticks: { color: '#6b7fa3' }, grid: { color: '#1e2d45' } },
+        y: { ticks: { color: '#6b7fa3', callback: v => '₹' + (v/1000).toFixed(0) + 'K' }, grid: { color: '#1e2d45' } }
+      }
+    }
+  });
+});
+</script>
+{% endblock %}

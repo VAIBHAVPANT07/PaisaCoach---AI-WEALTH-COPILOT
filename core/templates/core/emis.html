@@ -1,0 +1,155 @@
+{% extends "core/base.html" %}
+{% block title %}EMIs & Loans — PaisaCoach{% endblock %}
+{% block page_title %}EMI Trap Analyzer{% endblock %}
+
+{% block content %}
+
+{% if emi_analysis %}
+<!-- EMI Health Banner -->
+<div class="card mb-24 {% if emi_analysis.danger %}{% elif emi_analysis.warning %}{% endif %}"
+     style="border-color:{% if emi_analysis.danger %}rgba(255,59,85,0.4){% elif emi_analysis.warning %}rgba(255,187,0,0.4){% else %}rgba(0,229,160,0.3){% endif %};
+            background:{% if emi_analysis.danger %}rgba(255,59,85,0.05){% elif emi_analysis.warning %}rgba(255,187,0,0.05){% else %}rgba(0,229,160,0.05){% endif %};">
+  <div class="grid grid-4">
+    <div>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Total Monthly EMI</div>
+      <div style="font-family:var(--font-display);font-size:28px;font-weight:800;">₹{{ emi_analysis.total_monthly|floatformat:0 }}</div>
+    </div>
+    <div>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">EMI Burden</div>
+      <div style="font-family:var(--font-display);font-size:28px;font-weight:800;
+        color:{% if emi_analysis.danger %}var(--danger){% elif emi_analysis.warning %}var(--warn){% else %}var(--accent){% endif %};">
+        {{ emi_analysis.emi_ratio }}%
+      </div>
+    </div>
+    <div>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Status</div>
+      <div class="tag {% if emi_analysis.danger %}tag-danger{% elif emi_analysis.warning %}tag-warn{% else %}tag-green{% endif %}"
+           style="font-size:14px;padding:6px 14px;margin-top:4px;">
+        {% if emi_analysis.danger %}🚨 Danger Zone{% elif emi_analysis.warning %}⚠️ Warning{% else %}✓ Healthy{% endif %}
+      </div>
+    </div>
+    <div>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Prepay First</div>
+      <div style="font-size:15px;font-weight:600;color:var(--text);margin-top:4px;">{{ emi_analysis.prepay_first|default:"—" }}</div>
+      <div style="font-size:11px;color:var(--text-muted);">(Highest interest rate)</div>
+    </div>
+  </div>
+  <div style="margin-top:16px;">
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px;">Burden meter (safe: <30%, warning: 30-40%, danger: >40%)</div>
+    <div style="background:var(--border);border-radius:4px;height:8px;position:relative;overflow:hidden;">
+      <div style="height:100%;border-radius:4px;width:30%;background:var(--accent);display:inline-block;"></div>
+      <div style="height:100%;border-radius:0;width:10%;background:var(--warn);display:inline-block;"></div>
+      <div style="position:absolute;top:0;left:{{ emi_analysis.emi_ratio|floatformat:0 }}%;transform:translateX(-50%);
+                  height:100%;width:3px;background:white;border-radius:2px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Avalanche Method Breakdown -->
+{% if emi_analysis.sorted_emis %}
+<div class="card mb-24">
+  <div class="card-title">Avalanche Method — Prepayment Order</div>
+  <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Sorted by interest rate (highest first). Prepay in this order to save the most money.</div>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Rank</th><th>Loan Name</th><th>Monthly EMI</th><th>Interest Rate</th><th>Months Left</th><th>Total Interest Cost</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for emi in emi_analysis.sorted_emis %}
+      <tr>
+        <td>
+          <div style="width:28px;height:28px;border-radius:50%;
+            background:{% if forloop.first %}var(--accent){% else %}var(--surface2){% endif %};
+            color:{% if forloop.first %}#000{% else %}var(--text-muted){% endif %};
+            display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;">
+            {{ forloop.counter }}
+          </div>
+        </td>
+        <td style="font-weight:600;">{{ emi.name }}</td>
+        <td style="font-family:var(--font-display);">₹{{ emi.monthly|floatformat:0 }}</td>
+        <td>
+          <span class="tag {% if emi.rate > 12 %}tag-danger{% elif emi.rate > 9 %}tag-warn{% else %}tag-green{% endif %}">
+            {{ emi.rate }}% p.a.
+          </span>
+        </td>
+        <td style="color:var(--text-muted);">{{ emi.remaining }} months</td>
+        <td style="color:var(--danger);font-weight:600;font-family:var(--font-display);">₹{{ emi.interest_cost|floatformat:0 }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% endif %}
+
+<!-- Add EMI + List -->
+<div class="grid grid-2">
+  <!-- Add EMI Form -->
+  <div class="card">
+    <div class="card-title">Add New EMI / Loan</div>
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">Loan Name</label>
+        <input name="name" class="form-control" placeholder="e.g. Home Loan" required>
+      </div>
+      <div class="grid grid-2" style="gap:14px;">
+        <div class="form-group">
+          <label class="form-label">Principal (₹)</label>
+          <input name="principal" type="number" class="form-control" placeholder="500000" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Monthly EMI (₹)</label>
+          <input name="monthly_amount" type="number" class="form-control" placeholder="18000" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Interest Rate (% p.a.)</label>
+          <input name="interest_rate" type="number" step="0.01" class="form-control" placeholder="8.5" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Total Tenure (months)</label>
+          <input name="tenure_months" type="number" class="form-control" placeholder="240" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Remaining Months</label>
+          <input name="remaining_months" type="number" class="form-control" placeholder="200" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Start Date</label>
+          <input name="start_date" type="date" class="form-control" required>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;">Add EMI</button>
+    </form>
+  </div>
+
+  <!-- Existing EMIs -->
+  <div class="card">
+    <div class="card-title">Active EMIs</div>
+    {% if emis %}
+    {% for emi in emis %}
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;">
+      <div class="flex-between mb-8">
+        <div style="font-weight:600;font-size:15px;">{{ emi.name }}</div>
+        <span class="tag {% if emi.interest_rate > 12 %}tag-danger{% elif emi.interest_rate > 9 %}tag-warn{% else %}tag-blue{% endif %}">
+          {{ emi.interest_rate }}% p.a.
+        </span>
+      </div>
+      <div class="grid grid-2" style="gap:8px;">
+        <div style="font-size:13px;color:var(--text-muted);">Monthly: <strong style="color:var(--text);">₹{{ emi.monthly_amount|floatformat:0 }}</strong></div>
+        <div style="font-size:13px;color:var(--text-muted);">Remaining: <strong style="color:var(--text);">{{ emi.remaining_months }}mo</strong></div>
+        <div style="font-size:13px;color:var(--text-muted);">Interest Cost: <strong style="color:var(--danger);">₹{{ emi.total_interest_cost|floatformat:0 }}</strong></div>
+      </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div style="text-align:center;padding:32px;color:var(--text-muted);">
+      <div style="font-size:36px;margin-bottom:12px;">🎉</div>
+      No EMIs tracked yet. Add your loans to analyze your burden.
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

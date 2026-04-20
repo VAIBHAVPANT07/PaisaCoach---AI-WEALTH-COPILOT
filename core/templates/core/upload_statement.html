@@ -1,0 +1,52 @@
+{% extends "core/base.html" %}
+{% block title %}Import Statement — PaisaCoach{% endblock %}
+{% block page_title %}Import Bank Statement{% endblock %}
+{% block content %}
+<div style="max-width:600px;margin:0 auto;">
+  <div class="card">
+    <div class="card-title">Upload PDF Bank Statement</div>
+    <div class="alert alert-info mb-20">
+      Upload your bank statement PDF and we'll automatically extract and import your transactions. Works with most Indian bank statements.
+    </div>
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">Bank Statement (PDF)</label>
+        <div style="border:2px dashed var(--border);border-radius:12px;padding:40px;text-align:center;cursor:pointer;transition:border-color 0.2s;" id="drop-zone">
+          <div style="font-size:36px;margin-bottom:12px;">📄</div>
+          <div style="font-size:15px;font-weight:500;margin-bottom:8px;">Drop your PDF here or click to browse</div>
+          <div style="font-size:13px;color:var(--text-muted);">Supports SBI, HDFC, ICICI, Axis, Kotak and most Indian banks</div>
+          <input type="file" name="statement" accept=".pdf" id="file-input" style="position:absolute;inset:0;opacity:0;cursor:pointer;" onchange="showFileName(this)">
+        </div>
+        <div id="file-name" style="font-size:13px;color:var(--accent);margin-top:8px;display:none;"></div>
+      </div>
+      <div class="alert alert-warn">
+        <span>⚠️</span>
+        <span>Your PDF is processed locally on the server and never stored. Only the extracted transaction data is saved.</span>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;margin-top:8px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Import Transactions
+      </button>
+    </form>
+    <hr class="divider">
+    <div style="font-size:13px;color:var(--text-muted);">
+      <strong style="color:var(--text);">Prefer manual entry?</strong><br>
+      <a href="{% url 'transactions' %}" style="color:var(--accent);">Add transactions one by one →</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showFileName(input) {
+  const el = document.getElementById('file-name');
+  if (input.files[0]) {
+    el.textContent = '✓ Selected: ' + input.files[0].name;
+    el.style.display = 'block';
+    document.getElementById('drop-zone').style.borderColor = 'var(--accent)';
+  }
+}
+</script>
+{% endblock %}
