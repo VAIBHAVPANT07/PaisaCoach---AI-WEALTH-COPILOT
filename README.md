@@ -146,8 +146,6 @@ Primary project documentation:
 - `SETUP_GUIDE.md`
 - `ARCHITECTURE_OVERVIEW.md`
 
-Additional implementation notes have been consolidated into this README.
-
 ## License
 
 Distributed under the MIT License. See `LICENSE` for details.
