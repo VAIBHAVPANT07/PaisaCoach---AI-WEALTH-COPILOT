@@ -49,9 +49,13 @@ def logout_view(request):
 def load_demo_data(request):
     """Load sample data for demo/testing purposes."""
     if not request.user.is_authenticated:
-        return redirect('login')
+        import uuid
+        demo_username = f"demo_{uuid.uuid4().hex[:8]}"
+        user = User.objects.create_user(username=demo_username, password="demo_password")
+        login(request, user)
+    else:
+        user = request.user
 
-    user = request.user
     profile, _ = UserProfile.objects.get_or_create(user=user)
     profile.monthly_income = 65000
     profile.savings_goal = 200000
