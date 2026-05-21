@@ -33,7 +33,7 @@ PaisaCoach helps users understand spending behavior, identify idle money, optimi
 ### 1) Clone and install
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/VAIBHAVPANT07/PaisaCoach---AI-WEALTH-COPILOT.git
 cd paisacoach
 python -m venv .venv
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
@@ -50,7 +50,7 @@ Edit `.env` as needed.
 
 | Variable | Required | Description |
 |---|---|---|
-| `DJANGO_SECRET_KEY` | Yes (prod) | Django secret key |
+| `SECRET_KEY` | Yes (prod) | Django secret key |
 | `DEBUG` | Yes | `True` for local dev, `False` for prod |
 | `ALLOWED_HOSTS` | Yes (prod) | Comma-separated hostnames |
 | `ANTHROPIC_API_KEY` | Optional | Enables Anthropic-backed chat/insights |
@@ -111,18 +111,9 @@ python manage.py test
 python manage.py runserver
 ```
 
-## GitHub Publish Steps
+## Repository
 
-If this folder was shared without git history, initialize and publish with:
-
-```bash
-git init
-git add .
-git commit -m "Initial project commit"
-git branch -M main
-git remote add origin <your-github-repo-url>
-git push -u origin main
-```
+GitHub: https://github.com/VAIBHAVPANT07/PaisaCoach---AI-WEALTH-COPILOT.git
 
 Notes:
 
