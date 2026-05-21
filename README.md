@@ -123,7 +123,7 @@ Notes:
 ## Deployment Checklist
 
 - Set `DEBUG=False`
-- Set secure `DJANGO_SECRET_KEY`
+- Set secure `SECRET_KEY`
 - Configure `ALLOWED_HOSTS`
 - Use managed database for production
 - Run migrations in deploy pipeline
