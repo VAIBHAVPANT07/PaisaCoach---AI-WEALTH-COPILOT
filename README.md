@@ -2,6 +2,8 @@
 
 AI-powered wealth and personal finance copilot for Indian users.
 
+Last updated: 24 May 2026
+
 PaisaCoach helps users understand spending behavior, identify idle money, optimize EMI decisions, and learn financial fundamentals with conversational guidance.
 
 ## Recent Updates (April 2026)
