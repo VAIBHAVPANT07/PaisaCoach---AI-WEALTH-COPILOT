@@ -2,16 +2,15 @@
 
 AI-powered wealth and personal finance copilot for Indian users.
 
-Last updated: 24 May 2026
+Last updated: 15 July 2026
 
 PaisaCoach helps users understand spending behavior, identify idle money, optimize EMI decisions, and learn financial fundamentals with conversational guidance.
 
-## Recent Updates (April 2026)
+## Recent Updates (July 2026)
 
-- Profile now supports user age and saves it from the profile screen.
-- Dashboard shows a dedicated Profile Age stat card.
-- Analytics 6-month income vs expense trend chart render timing fixed.
-- Transactions page visual polish aligned with the rest of the app UI.
+- README setup now mirrors the bundled `.env.example` and current environment keys.
+- Optional Anthropic integration is still supported with a rule-based fallback when no API key is set.
+- Profile age, dashboard stats, analytics charts, and PDF statement import remain part of the current user flow.
 
 ## Highlights
 
